@@ -1,0 +1,80 @@
+sources:
+  - name: "ENA English"
+    url: "https://www.ena.et/web/eng/"
+    scraper_type: "ena_eng"
+    description: "Ethiopian News Agency — official state news wire in English."
+
+  - name: "ENA Amharic"
+    url: "https://www.ena.et/web/amh/"
+    scraper_type: "ena_amh"
+    description: "የኢትዮጵያ ዜና አገልግሎት — ይፋዊ የመንግሥት የዜና ወኪል በአማርኛ።"
+
+  - name: "Addis Standard"
+    url: "https://addisstandard.com/"
+    scraper_type: "addis_standard"
+    description: "Independent Ethiopian news and analysis covering politics, business, and society."
+
+  - name: "The Reporter Ethiopia"
+    url: "https://www.thereporterethiopia.com/"
+    scraper_type: "reporter_ethiopia"
+    description: "Weekly Ethiopian newspaper with in-depth reporting on politics and economy."
+
+  - name: "Ethiopia Observer"
+    url: "https://www.ethiopiaobserver.com/"
+    scraper_type: "ethiopia_observer"
+    description: "Independent news site covering Ethiopian affairs and the Horn of Africa."
+
+  - name: "Borkena"
+    url: "https://borkena.com/"
+    scraper_type: "borkena"
+    description: "Ethiopian news and commentary with a focus on democracy and human rights."
+
+  - name: "Ethiopia Insider"
+    url: "https://ethiopiainsider.com/"
+    scraper_type: "ethiopia_insider"
+    description: "Independent Amharic news site covering Ethiopian politics and current events."
+
+  - name: "Horn Diplomat"
+    url: "https://horndiplomat.com/"
+    scraper_type: "horn_diplomat"
+    description: "Diplomatic and geopolitical analysis focused on the Horn of Africa."
+
+  - name: "Human Rights Watch Ethiopia"
+    url: "https://www.hrw.org/"
+    scraper_type: "hrw_ethiopia"
+    description: "International NGO reporting on human rights conditions in Ethiopia."
+
+  - name: "BBC Ethiopia"
+    url: "https://feeds.bbci.co.uk/news/topics/cwlw3xz047jt/rss.xml"
+    scraper_type: "bbc_ethiopia"
+    description: "BBC News coverage of Ethiopian affairs — international perspective."
+
+  - name: "AP News Ethiopia"
+    url: "https://apnews.com/hub/ethiopia"
+    scraper_type: "ap_news"
+    description: "Associated Press reporting on Ethiopia — global wire service coverage."
+
+  - name: "Al Jazeera Ethiopia"
+    url: "https://www.aljazeera.com/where/ethiopia/"
+    scraper_type: "al_jazeera"
+    description: "Al Jazeera's reporting on Ethiopia — regional and international lens."
+
+  - name: "Reuters Ethiopia"
+    url: "https://www.reuters.com/world/africa/"
+    scraper_type: "reuters"
+    description: "Reuters news wire coverage of Ethiopian politics, economy, and events."
+
+  - name: "VOA Amharic"
+    url: "https://amharic.voanews.com/"
+    scraper_type: "voa_amharic"
+    description: "የአሜሪካ ድምፅ የአማርኛ ክፍል — ዓለም አቀፍ ዜናዎች በአማርኛ።"
+
+  - name: "DW Amharic"
+    url: "https://www.dw.com/am/"
+    scraper_type: "dw_amharic"
+    description: "የዶይቼ ቬለ የአማርኛ ክፍል — የጀርመን ዓለም አቀፍ የዜና አገልግሎት በአማርኛ።"
+
+  - name: "Tigrai Online"
+    url: "https://tigraionline.com/"
+    scraper_type: "tigrai_online"
+    description: "Tigray-focused news and analysis covering politics, peace process, and regional affairs."
