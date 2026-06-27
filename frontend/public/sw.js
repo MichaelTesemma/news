@@ -1,9 +1,9 @@
 const CACHE = "ethio-digest-v1";
 const PRECACHE_URLS = [
-  "/",
-  "/search",
-  "/bookmarks",
-  "/about",
+  "/news/",
+  "/news/search",
+  "/news/bookmarks",
+  "/news/about",
 ];
 
 self.addEventListener("install", (event) => {

@@ -16,11 +16,12 @@ BASE_URL = "http://localhost:5002"
 @pytest.fixture(scope="module")
 def live_server():
     from app import create_app
+    from tests.fake_db import FakeDB
+    fake_db = FakeDB()
     test_app = create_app(test_config={
         "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-    })
+        "SOURCES_CONFIG_PATH": "/dev/null",
+    }, db=fake_db)
 
     def run():
         test_app.run(port=5002, debug=False, use_reloader=False)

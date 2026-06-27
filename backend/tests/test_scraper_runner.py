@@ -2,9 +2,32 @@ from datetime import datetime, timezone
 
 import pytest
 
-from models import Article, Source
 from scrapers.base import ScrapeResult, ScraperRegistry
 from scraper_runner import ScrapeOrchestrator, ScrapeProgress, _store_articles
+from tests.fake_db import FakeDB
+
+
+@pytest.fixture
+def db():
+    return FakeDB()
+
+
+@pytest.fixture
+def sample_source(db):
+    return db.add_source("Test Source", "https://example.com", "test")
+
+
+@pytest.fixture
+def sample_article(db, sample_source):
+    result = db.post("articles", {
+        "source_id": sample_source["id"],
+        "title": "Test Article",
+        "url": "https://example.com/article/1",
+        "summary": "Test summary",
+        "body": "Test body",
+        "content_hash": "abc123",
+    })
+    return result[0]
 
 
 class TestScrapeProgress:
@@ -60,31 +83,31 @@ class TestStoreArticles:
             summary="New summary",
             content_hash="abc123",
         )]
-        count = _store_articles(sample_source, results)
+        count = _store_articles(db, sample_source, results)
         assert count == 1
-        assert Article.query.count() == 1
+        assert db.count_articles() == 1
 
     def test_skip_duplicate_content(self, db, sample_source, sample_article):
         results = [ScrapeResult(
-            url=sample_article.url,
-            title=sample_article.title,
-            summary=sample_article.summary,
-            content_hash=sample_article.content_hash,
+            url=sample_article["url"],
+            title=sample_article["title"],
+            summary=sample_article.get("summary"),
+            content_hash=sample_article.get("content_hash"),
         )]
-        count = _store_articles(sample_source, results)
+        count = _store_articles(db, sample_source, results)
         assert count == 0
 
     def test_update_changed_content(self, db, sample_source, sample_article):
         results = [ScrapeResult(
-            url=sample_article.url,
+            url=sample_article["url"],
             title="Updated Title",
             summary="Updated summary",
             content_hash="new_hash",
         )]
-        count = _store_articles(sample_source, results)
+        count = _store_articles(db, sample_source, results)
         assert count == 1
-        updated = Article.query.get(sample_article.id)
-        assert updated.title == "Updated Title"
+        updated = db.get_article(sample_article["id"])
+        assert updated["title"] == "Updated Title"
 
     def test_insert_multiple(self, db, sample_source):
         results = [
@@ -92,7 +115,7 @@ class TestStoreArticles:
             ScrapeResult(url="https://example.com/b", title="B"),
             ScrapeResult(url="https://example.com/c", title="C"),
         ]
-        count = _store_articles(sample_source, results)
+        count = _store_articles(db, sample_source, results)
         assert count == 3
 
 

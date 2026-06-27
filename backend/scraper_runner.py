@@ -4,12 +4,10 @@ import time
 from dataclasses import asdict
 from datetime import datetime, timezone
 
-from flask import current_app
-
-from models import Article, Source, db
 from scrapers.base import ScrapeResult, ScraperRegistry
 
 _scrape_lock = threading.Lock()
+
 from scrapers.addis_standard import AddisStandardScraper
 from scrapers.al_jazeera import AlJazeeraScraper
 from scrapers.ap_news import APNewsScraper
@@ -32,7 +30,6 @@ ScraperRegistry._types.update({
     "ethiopia_observer": GenericRSSScraper,
     "borkena": BorkenaScraper,
     "ethiopia_insider": EthiopiaInsiderScraper,
-
     "horn_diplomat": GenericRSSScraper,
     "hrw_ethiopia": HRWEthiopiaScraper,
     "bbc_ethiopia": GenericRSSScraper,
@@ -105,8 +102,9 @@ progress = ScrapeProgress()
 
 
 class ScrapeOrchestrator:
-    def __init__(self, progress_observer: ScrapeProgress | None = None):
+    def __init__(self, progress_observer: ScrapeProgress | None = None, db=None):
         self.progress = progress_observer
+        self.db = db
 
     def run(self, source_id: int | None = None) -> list[dict]:
         if not _scrape_lock.acquire(blocking=False):
@@ -119,10 +117,7 @@ class ScrapeOrchestrator:
             _scrape_lock.release()
 
     def _run_sources(self, source_id: int | None = None) -> list[dict]:
-        query = Source.query.filter_by(enabled=True)
-        if source_id:
-            query = query.filter_by(id=source_id)
-        sources = query.all()
+        sources = self.db.get_enabled_sources(source_id)
 
         results = {"total": 0, "sources": []}
 
@@ -131,29 +126,28 @@ class ScrapeOrchestrator:
 
         for i, src in enumerate(sources):
             if self.progress:
-                if not self.progress.start_source(src.name, i):
+                if not self.progress.start_source(src["name"], i):
                     self.progress.finish()
                     results["sources"].append({"name": "Cancelled", "new": 0})
                     return results
 
             try:
-                scraper_cls = ScraperRegistry.for_type(src.scraper_type)
+                scraper_cls = ScraperRegistry.for_type(src["scraper_type"])
                 scraper = scraper_cls(src)
                 articles = scraper.scrape()
 
-                count = _store_articles(src, articles)
-                src.last_scraped = datetime.now(timezone.utc)
-                db.session.commit()
-                results["sources"].append({"name": src.name, "new": count})
+                count = _store_articles(self.db, src, articles)
+                self.db.update_source_last_scraped(src["id"])
+                results["sources"].append({"name": src["name"], "new": count})
                 results["total"] += count
-                logger.info("Scraped %s: %d articles", src.name, count)
+                logger.info("Scraped %s: %d articles", src["name"], count)
                 if self.progress:
-                    self.progress.finish_source(src.name, count)
+                    self.progress.finish_source(src["name"], count)
             except Exception as e:
-                logger.exception("Failed to scrape %s", src.name)
-                results["sources"].append({"name": src.name, "error": str(e)})
+                logger.exception("Failed to scrape %s", src["name"])
+                results["sources"].append({"name": src["name"], "error": str(e)})
                 if self.progress:
-                    self.progress.finish_source(src.name, 0, error=str(e))
+                    self.progress.finish_source(src["name"], 0, error=str(e))
 
         if self.progress:
             self.progress.finish()
@@ -161,27 +155,28 @@ class ScrapeOrchestrator:
         return results
 
 
-def _store_articles(source, articles: list[ScrapeResult]) -> int:
+def _store_articles(db, source, articles: list[ScrapeResult]) -> int:
     urls = [r.url for r in articles]
-    existing = {
-        row.url: row
-        for row in Article.query.filter(Article.url.in_(urls)).all()
-    }
+    existing = db.get_articles_by_urls(urls)
+
     count = 0
-    now = datetime.now(timezone.utc)
+    now_iso = datetime.now(timezone.utc).isoformat()
+
     for result in articles:
-        data = asdict(result)
+        data = {k: v for k, v in asdict(result).items()}
         existing_row = existing.get(result.url)
         if existing_row:
-            if existing_row.content_hash != result.content_hash:
-                for k, v in data.items():
-                    setattr(existing_row, k, v)
-                existing_row.scraped_at = now
-                existing_row.updated_at = now
+            if existing_row.get("content_hash") != result.content_hash:
+                upd = {k: v for k, v in data.items() if k != "url"}
+                upd["scraped_at"] = now_iso
+                upd["updated_at"] = now_iso
+                db.patch("articles", upd, {"id": ("eq", existing_row["id"])})
                 count += 1
         else:
-            article = Article(source_id=source.id, **data)
-            db.session.add(article)
+            data["source_id"] = source["id"]
+            data["scraped_at"] = now_iso
+            data["updated_at"] = now_iso
+            db.post("articles", data)
             count += 1
-    db.session.commit()
+
     return count
