@@ -33,7 +33,7 @@ def _fetch_soup(url: str, timeout: int = 15):
 
 class ENAArticleScraper(BaseScraper):
     def scrape(self) -> list[ScrapeResult]:
-        lang = self.source.scraper_type.replace("ena_", "")
+        lang = self.source["scraper_type"].replace("ena_", "")
         if lang not in LANGUAGES:
             logger.error("Unknown ENA language: %s", lang)
             return []

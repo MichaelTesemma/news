@@ -16,7 +16,10 @@ LIST_URL = f"{BASE}/"
 class TigraiOnlineScraper(BaseScraper):
     def scrape(self) -> list[ScrapeResult]:
         try:
-            resp = requests.get(LIST_URL, headers=utils.HEADERS, timeout=30)
+            resp = requests.get(LIST_URL, headers={
+                "User-Agent": utils.USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            }, timeout=30)
             if resp.status_code != 200:
                 logger.warning("Tigrai Online listing failed: %d", resp.status_code)
                 return []
@@ -70,7 +73,10 @@ class TigraiOnlineScraper(BaseScraper):
 
     def _enrich(self, result: ScrapeResult):
         try:
-            resp = requests.get(result.url, headers=utils.HEADERS, timeout=30)
+            resp = requests.get(result.url, headers={
+                "User-Agent": utils.USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            }, timeout=30)
             if resp.status_code != 200:
                 logger.debug("Tigrai Online %s HTTP %d", result.url, resp.status_code)
                 return

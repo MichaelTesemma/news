@@ -17,7 +17,7 @@ class GenericRSSScraper(BaseScraper):
         if feed_url:
             self.feed_url = feed_url
         else:
-            url = source.url.rstrip("/")
+            url = source["url"].rstrip("/")
             if url.endswith(".xml") or url.endswith(".rss") or url.endswith("/feed"):
                 self.feed_url = url
             else:

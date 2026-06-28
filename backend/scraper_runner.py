@@ -166,6 +166,9 @@ def _store_articles(db, source, articles: list[ScrapeResult]) -> int:
 
     for result in articles:
         data = {k: v for k, v in asdict(result).items()}
+        for k, v in data.items():
+            if isinstance(v, datetime):
+                data[k] = v.isoformat()
         existing_row = existing.get(result.url)
         if existing_row:
             if existing_row.get("content_hash") != result.content_hash:
