@@ -2,14 +2,14 @@
   "name": "The Ethiopia Digest",
   "short_name": "EthioDigest",
   "description": "Curated news from across Ethiopia's media landscape",
-  "start_url": "/news/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF6F0",
   "theme_color": "#863bff",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/news/favicon.svg",
+      "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

@@ -8,38 +8,40 @@ from scrapers.base import ScrapeResult, ScraperRegistry
 
 _scrape_lock = threading.Lock()
 
-from scrapers.addis_standard import AddisStandardScraper
 from scrapers.al_jazeera import AlJazeeraScraper
-from scrapers.ap_news import APNewsScraper
-from scrapers.borkena import BorkenaScraper
-from scrapers.dw_amharic import DW_AmharicScraper
 from scrapers.ena import ENAArticleScraper
-from scrapers.ethiopia_insider import EthiopiaInsiderScraper
 from scrapers.generic_rss import GenericRSSScraper
-
 from scrapers.hrw_ethiopia import HRWEthiopiaScraper
-from scrapers.reporter_ethiopia import ReporterEthiopiaScraper
 from scrapers.reuters import ReutersScraper
 from scrapers.tigrai_online import TigraiOnlineScraper
 from scrapers.voa_amharic import VOA_AmharicScraper
 
 ScraperRegistry._types.update({
     "ena_eng": ENAArticleScraper,
-    "addis_standard": AddisStandardScraper,
-    "reporter_ethiopia": ReporterEthiopiaScraper,
     "ethiopia_observer": GenericRSSScraper,
-    "borkena": BorkenaScraper,
-    "ethiopia_insider": EthiopiaInsiderScraper,
     "horn_diplomat": GenericRSSScraper,
     "hrw_ethiopia": HRWEthiopiaScraper,
     "bbc_ethiopia": GenericRSSScraper,
-    "ap_news": APNewsScraper,
     "al_jazeera": AlJazeeraScraper,
     "reuters": ReutersScraper,
     "voa_amharic": VOA_AmharicScraper,
-    "dw_amharic": DW_AmharicScraper,
     "tigrai_online": TigraiOnlineScraper,
 })
+
+# Playwright/Camoufox scrapers (may fail on resource-constrained hosts)
+for _mod, _name, _key in [
+    ("scrapers.addis_standard", "AddisStandardScraper", "addis_standard"),
+    ("scrapers.ap_news", "APNewsScraper", "ap_news"),
+    ("scrapers.borkena", "BorkenaScraper", "borkena"),
+    ("scrapers.dw_amharic", "DW_AmharicScraper", "dw_amharic"),
+    ("scrapers.ethiopia_insider", "EthiopiaInsiderScraper", "ethiopia_insider"),
+    ("scrapers.reporter_ethiopia", "ReporterEthiopiaScraper", "reporter_ethiopia"),
+]:
+    try:
+        _cls = getattr(__import__(_mod, fromlist=[_name]), _name)
+        ScraperRegistry._types[_key] = _cls
+    except ImportError:
+        pass
 
 logger = logging.getLogger(__name__)
 
