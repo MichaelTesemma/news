@@ -6,9 +6,10 @@ import requests
 class SupabaseDB:
     def __init__(self, supabase_url, service_key):
         self.url = supabase_url.rstrip("/")
+        key = service_key.strip()
         self._headers = {
-            "apikey": service_key,
-            "Authorization": f"Bearer {service_key}",
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
