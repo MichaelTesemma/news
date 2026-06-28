@@ -1,68 +1,74 @@
 const BASE = import.meta.env.VITE_API_URL ||
   "https://ofzuqyqvhxibbaqxlmyn.functions.supabase.co/api";
+const API_KEY = import.meta.env.VITE_PUBLISHABLE_KEY ||
+  "sb_publishable_I8UCMJCKaq7FtC-Ojah-Fw_G39FeuFY";
+
+const headers = { apikey: API_KEY };
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${BASE}${path}`, { ...options, headers: { ...headers, ...options.headers } });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(body || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
 
 export async function fetchArticles({ page = 1, source } = {}) {
   const params = new URLSearchParams({ page, per_page: 20 });
   if (source) params.set("source", source);
-  const res = await fetch(`${BASE}/articles?${params}`);
-  return res.json();
+  return apiFetch(`/articles?${params}`);
 }
 
 export async function fetchArticle(id) {
-  const res = await fetch(`${BASE}/articles/${id}`);
-  if (!res.ok) throw new Error("Not found");
-  return res.json();
+  return apiFetch(`/articles/${id}`);
 }
 
 export async function fetchSources() {
-  const res = await fetch(`${BASE}/sources`);
-  return res.json();
+  return apiFetch("/sources");
 }
 
 export async function fetchDashboard() {
-  const res = await fetch(`${BASE}/dashboard`);
-  return res.json();
+  return apiFetch("/dashboard");
 }
 
 export async function fetchRelated(id) {
-  const res = await fetch(`${BASE}/articles/${id}/related`);
-  return res.json();
+  return apiFetch(`/articles/${id}/related`);
 }
 
 export async function triggerScrape(sourceId) {
-  const res = await fetch(`${BASE}/scrape`, {
+  return apiFetch("/scrape", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ source_id: sourceId }),
   });
-  return res.json();
 }
 
 export async function fetchSearch({ q, page = 1 } = {}) {
   const params = new URLSearchParams({ q, page, per_page: 30 });
-  const res = await fetch(`${BASE}/articles/search?${params}`);
-  if (!res.ok) return { articles: [], total: 0 };
-  return res.json();
+  try {
+    return await apiFetch(`/articles/search?${params}`);
+  } catch {
+    return { articles: [], total: 0 };
+  }
 }
 
 export async function fetchCategories() {
-  const res = await fetch(`${BASE}/categories`);
-  if (!res.ok) return { categories: [] };
-  return res.json();
+  try {
+    return await apiFetch("/categories");
+  } catch {
+    return { categories: [] };
+  }
 }
 
 export async function startScrape(sourceId) {
-  const res = await fetch(`${BASE}/scrape/start`, {
+  return apiFetch("/scrape/start", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ source_id: sourceId }),
   });
-  return res.json();
 }
 
 export async function cancelScrape() {
-  const res = await fetch(`${BASE}/scrape/cancel`, { method: "POST" });
-  return res.json();
+  return apiFetch("/scrape/cancel", { method: "POST" });
 }
 
 export function scrapeProgressStream() {
@@ -70,13 +76,17 @@ export function scrapeProgressStream() {
 }
 
 export async function fetchTrending() {
-  const res = await fetch(`${BASE}/articles/trending`);
-  if (!res.ok) return { articles: [] };
-  return res.json();
+  try {
+    return await apiFetch("/articles/trending");
+  } catch {
+    return { articles: [] };
+  }
 }
 
 export async function fetchDigest() {
-  const res = await fetch(`${BASE}/digest`);
-  if (!res.ok) return {};
-  return res.json();
+  try {
+    return await apiFetch("/digest");
+  } catch {
+    return {};
+  }
 }
